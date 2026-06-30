@@ -16,6 +16,7 @@ export default function VideoPlayer({
   setActiveServerIndex 
 }) {
   const [isDropdownActive, setIsDropdownActive] = useState(false);
+  const [isUpsideDown, setIsUpsideDown] = useState(false);
   const dropdownRef = useRef(null);
 
   // Close dropdown on click outside
@@ -27,6 +28,59 @@ export default function VideoPlayer({
     };
     document.addEventListener("click", handleOutsideClick);
     return () => document.removeEventListener("click", handleOutsideClick);
+  }, []);
+
+  // Smart rotation compensation
+  useEffect(() => {
+    const handleMotion = (e) => {
+      const acc = e.accelerationIncludingGravity;
+      if (!acc) return;
+
+      const x = acc.x;
+      const y = acc.y;
+
+      // Ignore if held in portrait
+      if (Math.abs(y) > Math.abs(x)) {
+        setIsUpsideDown(false);
+        return;
+      }
+
+      // Physical landscape direction (left or right)
+      let physicalDir = null;
+      if (x < -3.5) {
+        physicalDir = 'left';
+      } else if (x > 3.5) {
+        physicalDir = 'right';
+      }
+
+      if (!physicalDir) return;
+
+      // Browser's current rendered angle direction
+      const angle = typeof window !== "undefined" 
+        ? (window.orientation || (screen.orientation && screen.orientation.angle) || 0) 
+        : 0;
+
+      let browserDir = 'left';
+      if (angle === -90 || angle === 270) {
+        browserDir = 'right';
+      }
+
+      // If physical direction doesn't match browser rendering, apply 180deg CSS rotation
+      if (physicalDir !== browserDir) {
+        setIsUpsideDown(true);
+      } else {
+        setIsUpsideDown(false);
+      }
+    };
+
+    if (typeof window !== "undefined" && window.DeviceMotionEvent) {
+      window.addEventListener("devicemotion", handleMotion);
+    }
+    return () => {
+      if (typeof window !== "undefined" && window.DeviceMotionEvent) {
+        window.removeEventListener("devicemotion", handleMotion);
+      }
+    };
   }, []);
 
   const handleKeyDown = (e, callback) => {
@@ -43,7 +97,7 @@ export default function VideoPlayer({
     : null;
 
   return (
-    <div id="player-view">
+    <div id="player-view" className={isUpsideDown ? "upside-down" : ""}>
       <div className="player-header">
         <button 
           className="back-btn" 
