@@ -403,11 +403,6 @@ body {
   transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-#player-view.upside-down {
-  transform: rotate(180deg);
-}
-
-
 .player-header {
   padding: 14px 4%;
   background: #0c0c0c;

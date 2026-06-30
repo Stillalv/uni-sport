@@ -16,7 +16,6 @@ export default function VideoPlayer({
   setActiveServerIndex 
 }) {
   const [isDropdownActive, setIsDropdownActive] = useState(false);
-  const [isUpsideDown, setIsUpsideDown] = useState(false);
   const dropdownRef = useRef(null);
 
   // Close dropdown on click outside
@@ -28,46 +27,6 @@ export default function VideoPlayer({
     };
     document.addEventListener("click", handleOutsideClick);
     return () => document.removeEventListener("click", handleOutsideClick);
-  }, []);
-
-  // Listen to accelerometer motion to dynamically rotate screen 180deg (landscape swap)
-  // even if the user's OS Auto-Rotate is locked/disabled.
-  useEffect(() => {
-    const handleMotion = (e) => {
-      const acc = e.accelerationIncludingGravity;
-      if (!acc) return;
-
-      const x = acc.x;
-      const y = acc.y;
-
-      // Cek apakah orientasi fisik HP cenderung tegak (Portrait) atau tiduran (Landscape).
-      // Sumbu X adalah panjang ponsel, sumbu Y adalah pendek ponsel.
-      // Jika gravitasi menarik lebih kuat di sumbu Y (Math.abs(y) > Math.abs(x)), 
-      // berarti HP dipegang tegak (Portrait).
-      if (Math.abs(y) > Math.abs(x)) {
-        // Jangan putar layar jika HP sedang dipegang tegak/portrait
-        setIsUpsideDown(false);
-        return;
-      }
-
-      // Jika HP diposisikan Landscape (Math.abs(x) > Math.abs(y)):
-      // Tentukan apakah landscape normal atau landscape terbalik (180deg).
-      // Kita gunakan threshold 4.5 m/s² dengan hysteresis untuk stabilitas.
-      if (x > 4.5) {
-        setIsUpsideDown(true);
-      } else if (x < -4.5) {
-        setIsUpsideDown(false);
-      }
-    };
-
-    if (typeof window !== "undefined" && window.DeviceMotionEvent) {
-      window.addEventListener("devicemotion", handleMotion);
-    }
-    return () => {
-      if (typeof window !== "undefined" && window.DeviceMotionEvent) {
-        window.removeEventListener("devicemotion", handleMotion);
-      }
-    };
   }, []);
 
   const handleKeyDown = (e, callback) => {
@@ -84,7 +43,7 @@ export default function VideoPlayer({
     : null;
 
   return (
-    <div id="player-view" className={isUpsideDown ? "upside-down" : ""}>
+    <div id="player-view">
       <div className="player-header">
         <button 
           className="back-btn" 
