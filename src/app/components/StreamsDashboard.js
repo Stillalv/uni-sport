@@ -65,30 +65,6 @@ export default function StreamsDashboard({ initialData }) {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [activeMatch]);
 
-  // Fullscreen orientation lock handler
-  useEffect(() => {
-    const handleFullscreen = async () => {
-      try {
-        if (document.fullscreenElement) {
-          if (screen.orientation && screen.orientation.lock) {
-            await screen.orientation.lock("landscape");
-          }
-        } else {
-          if (screen.orientation && screen.orientation.unlock) {
-            screen.orientation.unlock();
-          }
-        }
-      } catch (err) {}
-    };
-
-    document.addEventListener("fullscreenchange", handleFullscreen);
-    document.addEventListener("webkitfullscreenchange", handleFullscreen);
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreen);
-      document.removeEventListener("webkitfullscreenchange", handleFullscreen);
-    };
-  }, []);
-
   // Flat list of matches with category context
   const allMatches = useMemo(() => {
     const list = [];
@@ -133,9 +109,6 @@ export default function StreamsDashboard({ initialData }) {
     try {
       if (document.fullscreenElement) {
         await document.exitFullscreen();
-      }
-      if (screen.orientation && screen.orientation.unlock) {
-        screen.orientation.unlock();
       }
     } catch (e) {}
   };
