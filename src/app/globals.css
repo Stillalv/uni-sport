@@ -600,9 +600,20 @@ body {
 
 #stream-player {
   width: 100%;
-  height: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 100%;
   border: none;
 }
+
+/* Mode Landscape - Video memenuhi layar penuh */
+@media (orientation: landscape) {
+  #stream-player {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+  }
+}
+
 
 /* General Loader */
 #loading {
