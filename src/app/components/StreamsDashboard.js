@@ -2,6 +2,16 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Icon } from "@iconify/react";
+import { 
+  Tv, 
+  CalendarDays, 
+  Play, 
+  ArrowLeft, 
+  Server, 
+  ChevronDown, 
+  ExternalLink, 
+  Info 
+} from "lucide-react";
 
 // Iconify/Material Design Icons Mapping for Sports (No emojis)
 const sportIcons = {
@@ -179,7 +189,7 @@ export default function StreamsDashboard({ initialData }) {
       {/* Sticky Header */}
       <header id="main-header" className={isScrolled ? "scrolled" : ""}>
         <div className="header-logo" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-          <Icon icon="mdi:television-play" />
+          <Tv size={26} strokeWidth={2.5} style={{ color: 'var(--netflix-red)' }} />
           <span>SPORTSFLIX</span>
         </div>
         <div className="header-nav">
@@ -210,12 +220,12 @@ export default function StreamsDashboard({ initialData }) {
             </div>
             <h1 className="hero-title">{featuredMatch.tag}</h1>
             <div className="hero-time">
-              <Icon icon="mdi:calendar-clock" />
+              <CalendarDays size={18} style={{ color: '#ffcc00' }} />
               <span>{featuredTimeText}</span>
             </div>
             <div className="hero-buttons">
               <button className="hero-btn watch-btn" onClick={() => handleOpenPlayer(featuredMatchIndex)}>
-                <Icon icon="mdi:play" /> Watch Now
+                <Play size={18} fill="currentColor" /> Watch Now
               </button>
             </div>
           </div>
@@ -295,7 +305,7 @@ export default function StreamsDashboard({ initialData }) {
         <div id="player-view">
           <div className="player-header">
             <button className="back-btn" onClick={handleClosePlayer}>
-              <Icon icon="mdi:arrow-left" />Back
+              <ArrowLeft size={18} />Back
             </button>
             <div className="player-title">{activeMatch.tag}</div>
             
@@ -308,13 +318,13 @@ export default function StreamsDashboard({ initialData }) {
                 onClick={() => setIsDropdownActive(!isDropdownActive)}
               >
                 <div className="select-trigger">
-                  <Icon icon="mdi:server-network" className="select-icon" />
+                  <Server size={18} className="select-icon" />
                   <span>
                     {activeMatch.iframes && activeMatch.iframes[activeServerIndex] 
                       ? (activeMatch.iframes[activeServerIndex].server || `Server ${activeServerIndex + 1}`) 
                       : "No Server"}
                   </span>
-                  <Icon icon="mdi:chevron-down" className="select-arrow" />
+                  <ChevronDown size={18} className="select-arrow" />
                 </div>
                 
                 {activeMatch.iframes && activeMatch.iframes.length > 0 && (
@@ -342,7 +352,7 @@ export default function StreamsDashboard({ initialData }) {
                   className="player-action-btn"
                   onClick={() => window.open(activeMatch.iframes[activeServerIndex].url, "_blank")}
                 >
-                  <Icon icon="mdi:open-in-new" />New Tab
+                  <ExternalLink size={18} />New Tab
                 </button>
               )}
             </div>
@@ -350,7 +360,7 @@ export default function StreamsDashboard({ initialData }) {
 
           {/* Warning Info Banner */}
           <div className="player-banner">
-            <Icon icon="mdi:information-outline" />
+            <Info size={18} />
             <span>Tip: If the video is blank or fails to play, try switching the <strong>Server</strong> or click <strong>New Tab</strong>.</span>
           </div>
 
