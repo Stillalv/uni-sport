@@ -143,12 +143,6 @@ export default function VideoPlayer({
             allowFullScreen
             allow="encrypted-media; picture-in-picture; fullscreen"
             referrerPolicy="no-referrer"
-            /* 
-              Sandbox kompromi: mengizinkan skrip dan pemuatan asal yang sama agar pemutar
-              video bisa berjalan, tetapi memblokir pop-up iklan dan frame-busting (redirect top-level)
-              dengan tidak menyertakan "allow-popups" dan "allow-top-navigation".
-            */
-            sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
           />
         ) : (
           <div style={{ color: "#aaa" }} tabIndex={0}>No streams available for this match.</div>
