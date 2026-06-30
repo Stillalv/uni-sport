@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
+import { Icon } from "@iconify/react";
 
 // Iconify/Material Design Icons Mapping for Sports (No emojis)
 const sportIcons = {
@@ -178,7 +179,7 @@ export default function StreamsDashboard({ initialData }) {
       {/* Sticky Header */}
       <header id="main-header" className={isScrolled ? "scrolled" : ""}>
         <div className="header-logo" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-          <iconify-icon icon="mdi:television-play"></iconify-icon>
+          <Icon icon="mdi:television-play" />
           <span>SPORTSFLIX</span>
         </div>
         <div className="header-nav">
@@ -209,12 +210,12 @@ export default function StreamsDashboard({ initialData }) {
             </div>
             <h1 className="hero-title">{featuredMatch.tag}</h1>
             <div className="hero-time">
-              <iconify-icon icon="mdi:calendar-clock"></iconify-icon>
+              <Icon icon="mdi:calendar-clock" />
               <span>{featuredTimeText}</span>
             </div>
             <div className="hero-buttons">
               <button className="hero-btn watch-btn" onClick={() => handleOpenPlayer(featuredMatchIndex)}>
-                <iconify-icon icon="mdi:play"></iconify-icon> Watch Now
+                <Icon icon="mdi:play" /> Watch Now
               </button>
             </div>
           </div>
@@ -231,7 +232,7 @@ export default function StreamsDashboard({ initialData }) {
             return (
               <div className="netflix-row" key={sport}>
                 <h3 className="row-title">
-                  <iconify-icon icon={sportIcons[sport] || 'mdi:target'}></iconify-icon>
+                  <Icon icon={sportIcons[sport] || 'mdi:target'} />
                   {sport}
                 </h3>
                 <div className="row-cards-container">
@@ -266,7 +267,7 @@ export default function StreamsDashboard({ initialData }) {
                           ) : null}
                           
                           <div className="card-img-placeholder" style={match.poster ? { display: "none" } : {}}>
-                            <iconify-icon icon={sportIcons[sport] || 'mdi:target'}></iconify-icon>
+                            <Icon icon={sportIcons[sport] || 'mdi:target'} />
                           </div>
 
                           <div className="card-info-overlay">
@@ -294,7 +295,7 @@ export default function StreamsDashboard({ initialData }) {
         <div id="player-view">
           <div className="player-header">
             <button className="back-btn" onClick={handleClosePlayer}>
-              <iconify-icon icon="mdi:arrow-left"></iconify-icon>Back
+              <Icon icon="mdi:arrow-left" />Back
             </button>
             <div className="player-title">{activeMatch.tag}</div>
             
@@ -307,13 +308,13 @@ export default function StreamsDashboard({ initialData }) {
                 onClick={() => setIsDropdownActive(!isDropdownActive)}
               >
                 <div className="select-trigger">
-                  <iconify-icon icon="mdi:server-network" className="select-icon"></iconify-icon>
+                  <Icon icon="mdi:server-network" className="select-icon" />
                   <span>
                     {activeMatch.iframes && activeMatch.iframes[activeServerIndex] 
                       ? (activeMatch.iframes[activeServerIndex].server || `Server ${activeServerIndex + 1}`) 
                       : "No Server"}
                   </span>
-                  <iconify-icon icon="mdi:chevron-down" className="select-arrow"></iconify-icon>
+                  <Icon icon="mdi:chevron-down" className="select-arrow" />
                 </div>
                 
                 {activeMatch.iframes && activeMatch.iframes.length > 0 && (
@@ -341,7 +342,7 @@ export default function StreamsDashboard({ initialData }) {
                   className="player-action-btn"
                   onClick={() => window.open(activeMatch.iframes[activeServerIndex].url, "_blank")}
                 >
-                  <iconify-icon icon="mdi:open-in-new"></iconify-icon>New Tab
+                  <Icon icon="mdi:open-in-new" />New Tab
                 </button>
               )}
             </div>
@@ -349,7 +350,7 @@ export default function StreamsDashboard({ initialData }) {
 
           {/* Warning Info Banner */}
           <div className="player-banner">
-            <iconify-icon icon="mdi:information-outline"></iconify-icon>
+            <Icon icon="mdi:information-outline" />
             <span>Tip: If the video is blank or fails to play, try switching the <strong>Server</strong> or click <strong>New Tab</strong>.</span>
           </div>
 

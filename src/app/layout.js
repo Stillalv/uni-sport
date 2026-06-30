@@ -1,5 +1,4 @@
 import { Inter, Outfit, JetBrains_Mono } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 
 const inter = Inter({
@@ -28,14 +27,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${inter.variable} ${outfit.variable} ${jetbrainsMono.variable}`}>
-      <body>
-        {children}
-        {/* Lazy load Iconify icons globally */}
-        <Script 
-          src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js" 
-          strategy="lazyOnload"
-        />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
