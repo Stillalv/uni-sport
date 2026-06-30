@@ -266,7 +266,7 @@ export default function StreamsDashboard({ initialData }) {
                           </div>
 
                           <div className="card-info-overlay">
-                            <h4 class="card-title">{match.tag}</h4>
+                            <h4 className="card-title">{match.tag}</h4>
                             <div className="card-sub">
                               <span>{match.league}</span>
                               <span className="card-time" style={{ color: status.timeColor }}>
