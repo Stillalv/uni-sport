@@ -16,6 +16,7 @@ export default function VideoPlayer({
   setActiveServerIndex 
 }) {
   const [isDropdownActive, setIsDropdownActive] = useState(false);
+  const [isUpsideDown, setIsUpsideDown] = useState(false);
   const dropdownRef = useRef(null);
 
   // Close dropdown on click outside
@@ -27,6 +28,35 @@ export default function VideoPlayer({
     };
     document.addEventListener("click", handleOutsideClick);
     return () => document.removeEventListener("click", handleOutsideClick);
+  }, []);
+
+  // Listen to accelerometer motion to dynamically rotate screen 180deg (landscape swap)
+  // even if the user's OS Auto-Rotate is locked/disabled.
+  useEffect(() => {
+    const handleMotion = (e) => {
+      const acc = e.accelerationIncludingGravity;
+      if (!acc) return;
+
+      const x = acc.x;
+
+      // In landscape lock, sumbu X is the long edge of the phone.
+      // Gravity acceleration flips signs when rotating 180 degrees physically.
+      // We use a threshold of 4.5 m/s² with hysteresis for stability.
+      if (x > 4.5) {
+        setIsUpsideDown(true);
+      } else if (x < -4.5) {
+        setIsUpsideDown(false);
+      }
+    };
+
+    if (typeof window !== "undefined" && window.DeviceMotionEvent) {
+      window.addEventListener("devicemotion", handleMotion);
+    }
+    return () => {
+      if (typeof window !== "undefined" && window.DeviceMotionEvent) {
+        window.removeEventListener("devicemotion", handleMotion);
+      }
+    };
   }, []);
 
   const handleKeyDown = (e, callback) => {
@@ -43,7 +73,7 @@ export default function VideoPlayer({
     : null;
 
   return (
-    <div id="player-view">
+    <div id="player-view" className={isUpsideDown ? "upside-down" : ""}>
       <div className="player-header">
         <button 
           className="back-btn" 
