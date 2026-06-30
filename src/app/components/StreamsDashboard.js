@@ -1,17 +1,11 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
-import { Icon } from "@iconify/react";
-import { 
-  Tv, 
-  CalendarDays, 
-  Play, 
-  ArrowLeft, 
-  Server, 
-  ChevronDown, 
-  ExternalLink, 
-  Info 
-} from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import Header from "./Header";
+import Hero from "./Hero";
+import SportRow from "./SportRow";
+import VideoPlayer from "./VideoPlayer";
+import { parseKickoffDate } from "../utils/date";
 
 // Iconify/Material Design Icons Mapping for Sports (No emojis)
 const sportIcons = {
@@ -31,10 +25,15 @@ export default function StreamsDashboard({ initialData }) {
   const [now, setNow] = useState(new Date());
   const [activeMatch, setActiveMatch] = useState(null);
   const [activeServerIndex, setActiveServerIndex] = useState(0);
-  const [isDropdownActive, setIsDropdownActive] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  const dropdownRef = useRef(null);
+  // Safe initialData object fallback to prevent runtime crashes
+  const safeData = useMemo(() => {
+    if (!initialData || typeof initialData !== "object" || Array.isArray(initialData)) {
+      return {};
+    }
+    return initialData;
+  }, [initialData]);
 
   // Poll current time every 10 seconds to update card badges and timers
   useEffect(() => {
@@ -90,35 +89,24 @@ export default function StreamsDashboard({ initialData }) {
     };
   }, []);
 
-  // Close dropdown on click outside
-  useEffect(() => {
-    const handleOutsideClick = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setIsDropdownActive(false);
-      }
-    };
-    document.addEventListener("click", handleOutsideClick);
-    return () => document.removeEventListener("click", handleOutsideClick);
-  }, []);
-
   // Flat list of matches with category context
   const allMatches = useMemo(() => {
     const list = [];
-    Object.keys(initialData).forEach(sport => {
-      if (Array.isArray(initialData[sport])) {
-        initialData[sport].forEach(match => {
+    Object.keys(safeData).forEach(sport => {
+      if (Array.isArray(safeData[sport])) {
+        safeData[sport].forEach(match => {
           list.push({ ...match, category: sport });
         });
       }
     });
     return list;
-  }, [initialData]);
+  }, [safeData]);
 
   // Find first live match, or fallback to the first upcoming match
   const featuredMatch = useMemo(() => {
     if (allMatches.length === 0) return null;
     const live = allMatches.find(m => {
-      const kickoff = new Date(m.kickoff.replace(" ", "T") + "+07:00");
+      const kickoff = parseKickoffDate(m.kickoff);
       return (kickoff - now) <= 0;
     });
     return live || allMatches[0];
@@ -127,7 +115,9 @@ export default function StreamsDashboard({ initialData }) {
   // Find index in flat list for featured watch button
   const featuredMatchIndex = useMemo(() => {
     if (!featuredMatch) return -1;
-    return allMatches.findIndex(m => m.tag === featuredMatch.tag && m.kickoff === featuredMatch.kickoff);
+    return allMatches.findIndex(
+      m => m.tag === featuredMatch.tag && m.kickoff === featuredMatch.kickoff
+    );
   }, [featuredMatch, allMatches]);
 
   const handleOpenPlayer = (matchIndex) => {
@@ -135,13 +125,11 @@ export default function StreamsDashboard({ initialData }) {
     if (match) {
       setActiveMatch(match);
       setActiveServerIndex(0);
-      setIsDropdownActive(false);
     }
   };
 
   const handleClosePlayer = async () => {
     setActiveMatch(null);
-    setIsDropdownActive(false);
     try {
       if (document.fullscreenElement) {
         await document.exitFullscreen();
@@ -153,7 +141,7 @@ export default function StreamsDashboard({ initialData }) {
   };
 
   const getMatchStatus = (kickoffStr) => {
-    const kickoff = new Date(kickoffStr.replace(" ", "T") + "+07:00");
+    const kickoff = parseKickoffDate(kickoffStr);
     const diff = kickoff - now;
 
     if (diff <= 0) {
@@ -178,207 +166,54 @@ export default function StreamsDashboard({ initialData }) {
   // Process featured match time text
   const featuredTimeText = useMemo(() => {
     if (!featuredMatch) return "";
-    const kickoff = new Date(featuredMatch.kickoff.replace(" ", "T") + "+07:00");
+    const kickoff = parseKickoffDate(featuredMatch.kickoff);
     const timeString = kickoff.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
     const dateString = kickoff.toLocaleDateString([], { day: "numeric", month: "short" });
     return `${dateString} • ${timeString}`;
   }, [featuredMatch]);
 
+  const featuredStatus = useMemo(() => {
+    if (!featuredMatch) return { isLive: false, badgeText: "UPCOMING" };
+    return getMatchStatus(featuredMatch.kickoff);
+  }, [featuredMatch, now]);
+
   return (
     <>
-      {/* Sticky Header */}
-      <header id="main-header" className={isScrolled ? "scrolled" : ""}>
-        <div className="header-logo" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-          <Tv size={26} strokeWidth={2.5} style={{ color: 'var(--netflix-red)' }} />
-          <span>SPORTSFLIX</span>
-        </div>
-        <div className="header-nav">
-          <span className="nav-item active">Home</span>
-          <span className="nav-item">Live</span>
-          <span className="nav-item">Schedule</span>
-        </div>
-      </header>
+      <Header isScrolled={isScrolled} />
 
-      {/* Featured Hero Banner */}
       {featuredMatch && (
-        <div id="hero-banner">
-          <div 
-            className="hero-bg" 
-            style={{ 
-              backgroundImage: featuredMatch.poster 
-                ? `url('${featuredMatch.poster}')` 
-                : "linear-gradient(135deg, #1f212a 0%, #0e0f14 100%)" 
-            }}
-          />
-          <div className="hero-overlay" />
-          <div className="hero-content">
-            <div className="hero-badge-row">
-              <span className={`status-badge ${getMatchStatus(featuredMatch.kickoff).isLive ? "status-live" : "status-upcoming"}`}>
-                {getMatchStatus(featuredMatch.kickoff).badgeText}
-              </span>
-              <div className="hero-league">{featuredMatch.league || "FEATURED MATCH"}</div>
-            </div>
-            <h1 className="hero-title">{featuredMatch.tag}</h1>
-            <div className="hero-time">
-              <CalendarDays size={18} style={{ color: '#ffcc00' }} />
-              <span>{featuredTimeText}</span>
-            </div>
-            <div className="hero-buttons">
-              <button className="hero-btn watch-btn" onClick={() => handleOpenPlayer(featuredMatchIndex)}>
-                <Play size={18} fill="currentColor" /> Watch Now
-              </button>
-            </div>
-          </div>
-        </div>
+        <Hero
+          featuredMatch={featuredMatch}
+          featuredTimeText={featuredTimeText}
+          status={featuredStatus}
+          onWatchClick={() => handleOpenPlayer(featuredMatchIndex)}
+        />
       )}
 
       {/* Rows Container */}
       <div className="container">
         <div id="view-dashboard">
-          {Object.keys(initialData).map(sport => {
-            const matches = initialData[sport];
-            if (!Array.isArray(matches) || matches.length === 0) return null;
-
-            return (
-              <div className="netflix-row" key={sport}>
-                <h3 className="row-title">
-                  <Icon icon={sportIcons[sport] || 'mdi:target'} />
-                  {sport}
-                </h3>
-                <div className="row-cards-container">
-                  {matches.map(match => {
-                    // Find flat index
-                    const globalIdx = allMatches.findIndex(m => m.tag === match.tag && m.kickoff === match.kickoff);
-                    const status = getMatchStatus(match.kickoff);
-
-                    return (
-                      <div 
-                        className="netflix-card" 
-                        key={`${match.tag}-${match.kickoff}`}
-                        onClick={() => handleOpenPlayer(globalIdx)}
-                      >
-                        <div className="card-img-wrapper">
-                          <div className="card-badge-overlay">
-                            <span className={`status-badge ${status.isLive ? "status-live" : "status-upcoming"}`}>
-                              {status.badgeText}
-                            </span>
-                          </div>
-                          
-                          {match.poster ? (
-                            <img 
-                              className="card-img" 
-                              src={match.poster} 
-                              alt={match.tag}
-                              onError={(e) => {
-                                e.target.style.display = "none";
-                                e.target.nextElementSibling.style.display = "flex";
-                              }}
-                            />
-                          ) : null}
-                          
-                          <div className="card-img-placeholder" style={match.poster ? { display: "none" } : {}}>
-                            <Icon icon={sportIcons[sport] || 'mdi:target'} />
-                          </div>
-
-                          <div className="card-info-overlay">
-                            <h4 className="card-title">{match.tag}</h4>
-                            <div className="card-sub">
-                              <span>{match.league}</span>
-                              <span className="card-time" style={{ color: status.timeColor }}>
-                                {status.timeText}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
+          {Object.keys(safeData).map(sport => (
+            <SportRow
+              key={sport}
+              sport={sport}
+              matches={safeData[sport]}
+              allMatches={allMatches}
+              getMatchStatus={getMatchStatus}
+              onCardClick={handleOpenPlayer}
+              sportIcons={sportIcons}
+            />
+          ))}
         </div>
       </div>
 
-      {/* Fullscreen Video Player Overlay */}
       {activeMatch && (
-        <div id="player-view">
-          <div className="player-header">
-            <button className="back-btn" onClick={handleClosePlayer}>
-              <ArrowLeft size={18} />Back
-            </button>
-            <div className="player-title">{activeMatch.tag}</div>
-            
-            <div className="player-controls-right">
-              {/* Custom HTML Dropdown */}
-              <div 
-                className={`custom-select ${isDropdownActive ? "active" : ""}`}
-                id="custom-server-select"
-                ref={dropdownRef}
-                onClick={() => setIsDropdownActive(!isDropdownActive)}
-              >
-                <div className="select-trigger">
-                  <Server size={18} className="select-icon" />
-                  <span>
-                    {activeMatch.iframes && activeMatch.iframes[activeServerIndex] 
-                      ? (activeMatch.iframes[activeServerIndex].server || `Server ${activeServerIndex + 1}`) 
-                      : "No Server"}
-                  </span>
-                  <ChevronDown size={18} className="select-arrow" />
-                </div>
-                
-                {activeMatch.iframes && activeMatch.iframes.length > 0 && (
-                  <div className="select-options-list">
-                    {activeMatch.iframes.map((server, idx) => (
-                      <div 
-                        className={`select-option-item ${idx === activeServerIndex ? "selected" : ""}`}
-                        key={idx}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveServerIndex(idx);
-                          setIsDropdownActive(false);
-                        }}
-                      >
-                        {server.server || `Server ${idx + 1}`}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* New Tab Button */}
-              {activeMatch.iframes && activeMatch.iframes[activeServerIndex] && (
-                <button 
-                  className="player-action-btn"
-                  onClick={() => window.open(activeMatch.iframes[activeServerIndex].url, "_blank")}
-                >
-                  <ExternalLink size={18} />New Tab
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Warning Info Banner */}
-          <div className="player-banner">
-            <Info size={18} />
-            <span>Tip: If the video is blank or fails to play, try switching the <strong>Server</strong> or click <strong>New Tab</strong>.</span>
-          </div>
-
-          {/* Iframe Video Container */}
-          <div className="video-wrapper">
-            {activeMatch.iframes && activeMatch.iframes[activeServerIndex] ? (
-              <iframe
-                id="stream-player"
-                src={activeMatch.iframes[activeServerIndex].url}
-                allowFullScreen
-                allow="encrypted-media; picture-in-picture; fullscreen"
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <div style={{ color: "#aaa" }}>No streams available for this match.</div>
-            )}
-          </div>
-        </div>
+        <VideoPlayer
+          activeMatch={activeMatch}
+          activeServerIndex={activeServerIndex}
+          onClosePlayer={handleClosePlayer}
+          setActiveServerIndex={setActiveServerIndex}
+        />
       )}
     </>
   );
