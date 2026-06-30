@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 
 // Iconify/Material Design Icons Mapping for Sports (No emojis)
 const sportIcons = {
@@ -22,6 +22,8 @@ export default function StreamsDashboard({ initialData }) {
   const [activeServerIndex, setActiveServerIndex] = useState(0);
   const [isDropdownActive, setIsDropdownActive] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+
+  const dropdownRef = useRef(null);
 
   // Poll current time every 10 seconds to update card badges and timers
   useEffect(() => {
@@ -79,8 +81,10 @@ export default function StreamsDashboard({ initialData }) {
 
   // Close dropdown on click outside
   useEffect(() => {
-    const handleOutsideClick = () => {
-      setIsDropdownActive(false);
+    const handleOutsideClick = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsDropdownActive(false);
+      }
     };
     document.addEventListener("click", handleOutsideClick);
     return () => document.removeEventListener("click", handleOutsideClick);
@@ -299,10 +303,8 @@ export default function StreamsDashboard({ initialData }) {
               <div 
                 className={`custom-select ${isDropdownActive ? "active" : ""}`}
                 id="custom-server-select"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsDropdownActive(!isDropdownActive);
-                }}
+                ref={dropdownRef}
+                onClick={() => setIsDropdownActive(!isDropdownActive)}
               >
                 <div className="select-trigger">
                   <iconify-icon icon="mdi:server-network" className="select-icon"></iconify-icon>
