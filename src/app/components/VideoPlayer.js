@@ -38,10 +38,21 @@ export default function VideoPlayer({
       if (!acc) return;
 
       const x = acc.x;
+      const y = acc.y;
 
-      // In landscape lock, sumbu X is the long edge of the phone.
-      // Gravity acceleration flips signs when rotating 180 degrees physically.
-      // We use a threshold of 4.5 m/s² with hysteresis for stability.
+      // Cek apakah orientasi fisik HP cenderung tegak (Portrait) atau tiduran (Landscape).
+      // Sumbu X adalah panjang ponsel, sumbu Y adalah pendek ponsel.
+      // Jika gravitasi menarik lebih kuat di sumbu Y (Math.abs(y) > Math.abs(x)), 
+      // berarti HP dipegang tegak (Portrait).
+      if (Math.abs(y) > Math.abs(x)) {
+        // Jangan putar layar jika HP sedang dipegang tegak/portrait
+        setIsUpsideDown(false);
+        return;
+      }
+
+      // Jika HP diposisikan Landscape (Math.abs(x) > Math.abs(y)):
+      // Tentukan apakah landscape normal atau landscape terbalik (180deg).
+      // Kita gunakan threshold 4.5 m/s² dengan hysteresis untuk stabilitas.
       if (x > 4.5) {
         setIsUpsideDown(true);
       } else if (x < -4.5) {
