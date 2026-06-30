@@ -667,4 +667,17 @@ body {
   .select-options-list {
     width: 100%;
   }
+  .video-wrapper {
+    flex: none;
+    aspect-ratio: 16 / 9;
+    height: auto;
+  }
+}
+
+@media (max-width: 768px) and (orientation: landscape) {
+  .video-wrapper {
+    flex: 1;
+    aspect-ratio: auto;
+    height: 100%;
+  }
 }
